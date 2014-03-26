@@ -6,6 +6,7 @@ var LocalStrategy = require('passport-local').Strategy;
 
 var UserAPIServer = function(options)
 {
+    options = options || {};
     var userStore = options["userStore"];
     var userStoreInitializer = options["user_store_initializer"];
 
@@ -62,7 +63,7 @@ var UserAPIServer = function(options)
             }
             else
             {
-                var user = userStoreInitializer.initialize();
+                var user = userStoreInitializer(username, password, userStore);
                 if(user)
                 {
                     return done(null, user);
