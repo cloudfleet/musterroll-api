@@ -54,24 +54,25 @@ var UserAPIServer = function(options)
 
                 if(userStore.authorize(username, password))
                 {
-                    return done(null, userStore.getUsers()[username]);
+                    done(null, userStore.getUsers()[username]);
                 }
                 else
                 {
-                    return done(null, false, { message: 'Incorrect credentials.' });
+                    done(null, false, { message: 'Incorrect credentials.' });
                 }
             }
             else
             {
-                var user = userStoreInitializer(username, password, userStore);
-                if(user)
-                {
-                    return done(null, user);
-                }
-                else
-                {
-                    return done(null, false, { message: 'Incorrect credentials.' });
-                }
+                userStoreInitializer(
+                    username,
+                    password,
+                    userStore,
+                    function(user){
+                        done(null, user);
+                    },
+                    function(){
+                        done(null, false, { message: 'Incorrect credentials.' });
+                    });
             }
         }
     ));
