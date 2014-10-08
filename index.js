@@ -85,6 +85,7 @@ var UserAPIServer = function(options)
     });
 
 
+
     webServer.get('/api/v1/currentUser', isAuthenticated, function(req, res){
 
         var user = req.user;
@@ -111,6 +112,12 @@ var UserAPIServer = function(options)
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Length', body.length);
         res.end(body);
+    });
+    webServer.get('/api/v1/users/from_alias/:alias', true, function(req, res) {
+        var alias = req.param('alias');
+        var user_candidate = _.find(_.values(userStore.getUsers()), function(user) {
+            return user.id === alias; // TODO create proper alias handling
+        });
     });
     webServer.get('/api/v1/users/:user_id', isAdmin, function(req, res){
         var body = JSON.stringify(userStore.getUsers()[req.param('user_id')]);
