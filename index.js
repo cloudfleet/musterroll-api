@@ -113,7 +113,7 @@ var UserAPIServer = function(options)
         res.setHeader('Content-Length', body.length);
         res.end(body);
     });
-    webServer.get('/api/v1/users/from_alias/:alias', true, function(req, res) {
+    webServer.get('/api/v1/users/from_alias/:alias', function(){return true;}, function(req, res) {
         var alias = req.param('alias');
         var user_candidate = _.find(_.values(userStore.getUsers()), function(user) {
             return user.id === alias; // TODO create proper alias handling
