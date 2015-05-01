@@ -136,6 +136,10 @@ var UserAPIServer = function(options)
         res.setHeader('Content-Length', body.length);
         res.end(body);
     });
+    webServer.get('/logout', function(req, res){
+      req.logout();
+      res.redirect('/');
+    });
 
 
     this.userApiServer = webServer
