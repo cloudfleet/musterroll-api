@@ -45,6 +45,21 @@ var UserAPIServer = function(options)
         }
     };
 
+    var isAdminOrSelf = function(req, res, next)
+    {
+      isAdmin(req, res, function() {
+        var user_id = req.param('user_id');
+        if(user_id === req.user.id)
+        {
+          next();
+        }
+        else
+        {
+          res.status(401).send('Not authenticated');
+        }
+
+      });
+    }
 
     passport.use(new LocalStrategy(
         function(username, password, done) {
@@ -119,13 +134,13 @@ var UserAPIServer = function(options)
             return user.id === alias; // TODO create proper alias handling
         });
     });
-    webServer.get('/api/v1/users/:user_id', isAdmin, function(req, res){
+    webServer.get('/api/v1/users/:user_id', isAdminOrSelf, function(req, res){
         var body = JSON.stringify(userStore.getUsers()[req.param('user_id')]);
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Length', body.length);
         res.end(body);
     });
-    webServer.post('/api/v1/users/:user_id', isAdmin, function(req, res){
+    webServer.post('/api/v1/users/:user_id', isAdminOrSelf, function(req, res){
         var user_id = req.param('user_id');
         var client_user = req.body;
         userStore.updateUser(client_user);
@@ -136,6 +151,28 @@ var UserAPIServer = function(options)
         res.setHeader('Content-Length', body.length);
         res.end(body);
     });
+    webServer.delete('/api/v1/users/:user_id', isAdmin, function(req, res){
+        var user_id = req.param('user_id');
+        userStore.deleteUser(user_id);
+
+        var body = JSON.stringify({success: true});
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Length', body.length);
+        res.end(body);
+    });
+    webServer.put('/api/v1/users/:user_id/password', isAdminOrSelf, function(req, res){
+        var user_id = req.param('user_id');
+        var password = req.body.password;
+        userStore.setPassword(user_id, password);
+
+        var body = JSON.stringify({success: true});
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Length', body.length);
+        res.end(body);
+    });
+
     webServer.get('/logout', function(req, res){
       req.logout();
       res.redirect('/');
