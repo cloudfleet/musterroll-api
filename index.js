@@ -47,18 +47,15 @@ var UserAPIServer = function(options)
 
     var isAdminOrSelf = function(req, res, next)
     {
-      isAdmin(req, res, function() {
-        var user_id = req.param('user_id');
-        if(user_id === req.user.id)
-        {
-          next();
-        }
-        else
-        {
-          res.status(401).send('Not authenticated');
-        }
-
-      });
+      var user_id = req.param('user_id');
+      if(user_id === req.user.id)
+      {
+        next();
+      }
+      else
+      {
+        isAdmin(req, res, next);
+      }
     }
 
     passport.use(new LocalStrategy(
