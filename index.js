@@ -106,7 +106,6 @@ var UserAPIServer = function(options)
         {
             var body = JSON.stringify(user);
             res.setHeader('Content-Type', 'application/json');
-            res.setHeader('Content-Length', body.length);
             res.end(body);
         }
         else
@@ -122,7 +121,6 @@ var UserAPIServer = function(options)
     webServer.get('/api/v1/users', isAdmin, function(req, res){
         var body = JSON.stringify(_.values(userStore.getUsers()));
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Length', body.length);
         res.end(body);
     });
     webServer.get('/api/v1/users/from_alias/:alias', function(){return true;}, function(req, res) {
@@ -134,7 +132,6 @@ var UserAPIServer = function(options)
     webServer.get('/api/v1/users/:user_id', isAdminOrSelf, function(req, res){
         var body = JSON.stringify(userStore.getUsers()[req.param('user_id')]);
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Length', body.length);
         res.end(body);
     });
     webServer.post('/api/v1/users/:user_id', isAdminOrSelf, function(req, res){
@@ -145,7 +142,6 @@ var UserAPIServer = function(options)
         var body = JSON.stringify(client_user);
 
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Length', body.length);
         res.end(body);
     });
     webServer.delete('/api/v1/users/:user_id', isAdmin, function(req, res){
@@ -155,7 +151,6 @@ var UserAPIServer = function(options)
         var body = JSON.stringify({success: true});
 
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Length', body.length);
         res.end(body);
     });
     webServer.put('/api/v1/users/:user_id/password', isAdminOrSelf, function(req, res){
@@ -166,7 +161,6 @@ var UserAPIServer = function(options)
         var body = JSON.stringify({success: true});
 
         res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Length', body.length);
         res.end(body);
     });
 
