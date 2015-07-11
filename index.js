@@ -104,13 +104,21 @@ var UserAPIServer = function(options)
 
         if(user)
         {
+          if(!req.query.user || (req.query.user === user.id))
+          {
             var body = JSON.stringify(user);
             res.setHeader('Content-Type', 'application/json');
+            res.setHeader('X-Authenticated-User', user.id);
+            res.setHeader('X-Authenticated-User-Admin', user.isAdmin);
             res.end(body);
+          }
+          else {
+            res.status(403).send('Forbidden');
+          }
         }
         else
         {
-            res.status(404).send('Not found');
+            res.status(401).send('Authentication Needed');
         }
     });
 
