@@ -1,6 +1,6 @@
 {
   "name": "musterroll-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A rest api for the musterroll user management framework",
   "main": "index.js",
   "scripts": {

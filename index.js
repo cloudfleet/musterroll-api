@@ -21,6 +21,30 @@ var UserAPIServer = function(options)
     webServer.use(passport.initialize());
     webServer.use(passport.session());
 
+
+    var sanitizeIncomingUserData = function(user_data)
+    {
+      return _.pick(user_data, 'id', 'aliases', 'firstname', 'lastname');
+    }
+
+    var sanitizeOutgoinUserData = function(user_data)
+    {
+      return _.pick(user_data, 'id', 'aliases', 'firstname', 'lastname', 'isAdmin');
+    }
+
+    var getUserForAlias = function(alias)
+    {
+      _.find(userStore.getUsers(), function(user)
+      {
+        return user.id === alias || (user.aliases && _.includes(user.aliases, alias));
+      });
+    }
+
+    var userIdAvailable = function(user_id)
+    {
+      return !getUserForAlias(user_id);
+    };
+
     var isAuthenticated = function(req, res, next)
     {
         if(req.isAuthenticated())
@@ -106,7 +130,7 @@ var UserAPIServer = function(options)
         {
           if(!req.query.user || (req.query.user === user.id))
           {
-            var body = JSON.stringify(user);
+            var body = JSON.stringify(sanitizeOutgoinUserData(user));
             res.setHeader('Content-Type', 'application/json');
             res.setHeader('X-Authenticated-User', user.id);
             res.setHeader('X-Authenticated-User-Admin', user.isAdmin);
@@ -127,25 +151,56 @@ var UserAPIServer = function(options)
     });
 
     webServer.get('/api/v1/users', isAdmin, function(req, res){
-        var body = JSON.stringify(_.values(userStore.getUsers()));
+        var body = JSON.stringify(_.map(_.values(userStore.getUsers()), sanitizeOutgoinUserData);
         res.setHeader('Content-Type', 'application/json');
         res.end(body);
     });
     webServer.get('/api/v1/users/from_alias/:alias', function(){return true;}, function(req, res) {
         var alias = req.param('alias');
-        var user_candidate = _.find(_.values(userStore.getUsers()), function(user) {
-            return user.id === alias; // TODO create proper alias handling
-        });
+        var user_candidate = getUserForAlias(alias);
+        if(user_candidate)
+        {
+          var body = JSON.stringify(sanitizeOutgoinUserData(userStore.getUsers()[req.param('user_id')]));
+          res.setHeader('Content-Type', 'application/json');
+          res.end(body);
+        }
+        else {
+          res.status(404).send('User not found');
+        }
     });
     webServer.get('/api/v1/users/:user_id', isAdminOrSelf, function(req, res){
         var body = JSON.stringify(userStore.getUsers()[req.param('user_id')]);
         res.setHeader('Content-Type', 'application/json');
         res.end(body);
     });
-    webServer.post('/api/v1/users/:user_id', isAdminOrSelf, function(req, res){
+    webServer.post('/api/v1/users', isAdmin, function(req, res){
+        var client_user = sanitizeIncomingUserData(req.body);
+        user_id = client_user.id;
+        if(!user_id)
+        {
+          res.status(400).send('User must have non-empty user id');
+        }
+        else if(userIdAvailable(user_id))
+        {
+          res.status(409).send('User ID already taken. Might be an alias.');
+        }
+        else
+        {
+          userStore.updateUser(client_user);
+
+          var body = JSON.stringify(sanitizeOutgoinUserData(client_user));
+
+          res.setHeader('Content-Type', 'application/json');
+          res.end(body);
+        };
+    });
+    webServer.put('/api/v1/users/:user_id', isAdminOrSelf, function(req, res){
         var user_id = req.param('user_id');
-        var client_user = req.body;
-        userStore.updateUser(client_user);
+        var client_user = sanitizeIncomingUserData(req.body);
+        var server_user = userStore.getUsers()[user_id];
+
+        var merged_user = _.defaults(client_user, server_user);
+        userStore.updateUser(merged_user);
 
         var body = JSON.stringify(client_user);
 
@@ -174,7 +229,9 @@ var UserAPIServer = function(options)
 
     webServer.get('/logout', function(req, res){
       req.logout();
-      res.redirect('/');
+      var body = JSON.stringify({success: true});
+      res.setHeader('Content-Type', 'application/json');
+      res.end(body);
     });
 
 
