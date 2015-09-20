@@ -1,6 +1,6 @@
 {
   "name": "musterroll-api",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A rest api for the musterroll user management framework",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,6 @@
     "lodash": "^2.4.1",
     "passport": "^0.2.0",
     "passport-local": "^1.0.0",
-    "express":"^3.4.4"
+    "express": "^3.4.4"
   }
 }
