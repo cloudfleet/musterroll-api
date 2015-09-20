@@ -237,7 +237,7 @@ var musterroll_api = (function() {
   };
 
   return {
-     createServer: function(options){return new UserAPIServer(options);}
+     createServer: function(options){return new UserAPIServer(options).userApiServer;}
   };
 }());
 
